@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, TouchableOpacity, Text, StatusBar } from 'react-native';
 import { registerRootComponent } from 'expo';
 
@@ -6,6 +6,7 @@ import HomeScreen from './app/screens/HomeScreen';
 import ReportScreen from './app/screens/ReportScreen';
 import HistoryScreen from './app/screens/HistoryScreen';
 import LocationBadge from './app/components/LocationBadge';
+import { requestLocationPermission } from './app/services/deviceFeatures';
 
 // ==========================================
 // Main Application Gateway (Root Component)
@@ -15,6 +16,35 @@ import LocationBadge from './app/components/LocationBadge';
 // ==========================================
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [gpsData, setGpsData] = useState({
+    latitude: null,
+    longitude: null,
+    status: 'loading',
+    errorMsg: null,
+  });
+
+  // Fetch Live Satellite Coordinates on Launch
+  useEffect(() => {
+    async function fetchLiveCoords() {
+      const result = await requestLocationPermission();
+      if (result.granted && result.coords) {
+        setGpsData({
+          latitude: result.coords.latitude,
+          longitude: result.coords.longitude,
+          status: 'granted',
+          errorMsg: null,
+        });
+      } else {
+        setGpsData({
+          latitude: null,
+          longitude: null,
+          status: 'denied',
+          errorMsg: result.error || 'GPS Permission Denied',
+        });
+      }
+    }
+    fetchLiveCoords();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,12 +62,13 @@ export default function App() {
         </View>
       </View>
 
-      {/* Top GPS Location Badge (Arwin's Component) */}
+      {/* Top GPS Location Badge (Passing Live Coordinates to Arwin's Component) */}
       <View style={styles.topBadgeContainer}>
         <LocationBadge
-          latitude="8.4542"
-          longitude="124.6319"
-          status="granted"
+          latitude={gpsData.latitude}
+          longitude={gpsData.longitude}
+          status={gpsData.status}
+          errorMsg={gpsData.errorMsg}
         />
       </View>
 
