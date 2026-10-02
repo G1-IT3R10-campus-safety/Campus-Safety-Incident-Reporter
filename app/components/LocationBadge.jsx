@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 // ==========================================
-// Reusable Component: LocationBadge
+// Reusable Component: LocationBadge (LocationDisplay)
+// Course: IT3R10 • Group 1 (Campus Safety Incident Reporter)
 // Assigned Member: Arwin Ambag
 // Requirement: Receives Props (latitude, longitude, status, errorMsg)
 // Demonstrates: Graceful fallback when permission is denied or loading
@@ -12,8 +13,13 @@ export default function LocationBadge({ latitude, longitude, status, errorMsg })
   if (status === 'denied') {
     return (
       <View style={[styles.badge, styles.deniedBadge]}>
-        <Text style={styles.deniedTitle}>GPS Permission Denied</Text>
-        <Text style={styles.subText}>{errorMsg || 'Please enable location services in device settings.'}</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.deniedTitle}>GPS ACCESS DISABLED</Text>
+          <Text style={styles.deniedPill}>Permission Denied</Text>
+        </View>
+        <Text style={styles.subText}>
+          {errorMsg || 'Please enable device location to attach precise campus coordinates.'}
+        </Text>
       </View>
     );
   }
@@ -21,16 +27,19 @@ export default function LocationBadge({ latitude, longitude, status, errorMsg })
   return (
     <View style={styles.badge}>
       <View style={styles.headerRow}>
-        <Text style={styles.badgeTitle}>CURRENT ZONE</Text>
-        <Text style={styles.statusPill}>GPS Synchronized</Text>
+        <Text style={styles.badgeTitle}>CAMPUS LOCATION TELEMETRY</Text>
+        <View style={styles.activePillContainer}>
+          <View style={styles.greenDot} />
+          <Text style={styles.statusPill}>GPS Synchronized</Text>
+        </View>
       </View>
-      <Text style={styles.locationName}>IT Building • Campus Gate 1</Text>
+      <Text style={styles.locationName}>IT & Engineering Complex • Main Perimeter</Text>
       {latitude && longitude ? (
         <Text style={styles.coordsText}>
-          {latitude}° N, {longitude}° E
+          Coordinates: {latitude}° N, {longitude}° E
         </Text>
       ) : (
-        <Text style={styles.subText}>Detecting campus coordinates...</Text>
+        <Text style={styles.subText}>Acquiring campus satellite coordinates...</Text>
       )}
     </View>
   );
@@ -52,6 +61,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 4,
   },
   badgeTitle: {
     fontSize: 10,
@@ -59,10 +69,9 @@ const styles = StyleSheet.create({
     color: '#415A77',
     letterSpacing: 0.5,
   },
-  statusPill: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: '#10B981',
+  activePillContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -70,11 +79,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D1FAE5',
   },
+  greenDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#10B981',
+    marginRight: 4,
+  },
+  statusPill: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#10B981',
+  },
   locationName: {
     fontSize: 13,
     fontWeight: 'bold',
     color: '#1E293B',
-    marginTop: 4,
+    marginTop: 2,
   },
   coordsText: {
     fontSize: 11,
@@ -88,8 +109,20 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   deniedTitle: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
     color: '#DC2626',
+    letterSpacing: 0.5,
+  },
+  deniedPill: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#DC2626',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
 });

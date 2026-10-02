@@ -1,25 +1,45 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 
 // ==========================================
 // Reusable Component: IncidentCard
+// Course: IT3R10 • Group 1 (Campus Safety Incident Reporter)
 // Assigned Member: Kirklan Caberte
-// Requirement: Receives at least 2 Props (title, category, location, date, status)
+// Requirement: Receives Props (title, category, location, date, description, imageUri)
+// Strictly: Reporter Mode (No Status)
 // Palette: Slate Blue (#415A77) & Soft Slate (#778DA9)
 // ==========================================
-export default function IncidentCard({ title, category, location, date, status }) {
+export default function IncidentCard({ title, category, location, date, description, imageUri }) {
   return (
     <View style={styles.card}>
+      {/* Header Row: Title and Category Badge */}
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title} numberOfLines={2}>{title}</Text>
         <View style={styles.categoryBadge}>
           <Text style={styles.categoryText}>{category}</Text>
         </View>
       </View>
+
+      {/* Location Information */}
       <Text style={styles.location}>Location: {location}</Text>
+
+      {/* Incident Description */}
+      {description ? (
+        <Text style={styles.description} numberOfLines={2}>{description}</Text>
+      ) : null}
+
+      {/* Photo Evidence Thumbnail (if image was captured by camera) */}
+      {imageUri ? (
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: imageUri }} style={styles.cardImage} resizeMode="cover" />
+          <Text style={styles.photoAttachedLabel}>Photo Evidence Attached</Text>
+        </View>
+      ) : null}
+
+      {/* Footer Timestamp */}
       <View style={styles.footerRow}>
+        <Text style={styles.dateLabel}>FILED ON</Text>
         <Text style={styles.date}>{date}</Text>
-        <Text style={styles.statusText}>{status || 'Under Review'}</Text>
       </View>
     </View>
   );
@@ -42,7 +62,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 6,
   },
   title: {
@@ -50,15 +70,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1E293B',
     flex: 1,
+    marginRight: 8,
   },
   categoryBadge: {
     backgroundColor: '#EFF3F6',
     borderWidth: 1,
     borderColor: '#BAC7D5',
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 6,
-    marginLeft: 8,
   },
   categoryText: {
     fontSize: 10,
@@ -69,8 +89,35 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 12,
-    color: '#64748B',
+    color: '#475569',
     marginTop: 2,
+    fontWeight: '500',
+  },
+  description: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 6,
+    lineHeight: 16,
+  },
+  imageContainer: {
+    marginTop: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+  },
+  cardImage: {
+    width: '100%',
+    height: 140,
+    borderRadius: 8,
+  },
+  photoAttachedLabel: {
+    fontSize: 9,
+    color: '#415A77',
+    fontWeight: '700',
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   footerRow: {
     flexDirection: 'row',
@@ -81,13 +128,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
+  dateLabel: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#94A3B8',
+    letterSpacing: 0.5,
+  },
   date: {
     fontSize: 11,
-    color: '#94A3B8',
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#415A77',
+    color: '#64748B',
+    fontWeight: '500',
   },
 });
