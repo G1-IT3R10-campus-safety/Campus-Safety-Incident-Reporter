@@ -1,44 +1,67 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import IncidentCard from '../components/IncidentCard';
+import { getReports } from '../services/storage';
 
 // ==========================================
-// Presentation Layer: Report History Screen
+// Presentation Layer: Report History Screen (Final Sprint)
+// Course: IT3R10 • Group 1 (Campus Safety Incident Reporter)
 // Assigned Member: Kirklan Caberte
 // Requirement: Report History (Rubric Page 2)
-// Demonstrates: History feed loaded from Data Layer
+// Demonstrates: Dynamic History Log Hydration from Data Layer
 // ==========================================
 export default function HistoryScreen() {
+  const [reports, setReports] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const data = await getReports();
+      setReports(data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>REPORT HISTORY</Text>
-        <Text style={styles.subtitle}>Persistent logs loaded from Local Storage</Text>
+        <Text style={styles.title}>CAMPUS REPORT HISTORY</Text>
+        <Text style={styles.subtitle}>Persistent logs loaded directly from local storage.</Text>
       </View>
 
-      <IncidentCard
-        title="Broken Street Light"
-        category="Hazard"
-        location="Campus Gate 1 Pathway"
-        date="Oct 1, 2026 • 8:30 AM"
-        status="Investigating"
-      />
-
-      <IncidentCard
-        title="Slippery Corridor Floor"
-        category="Facility"
-        location="2nd Floor IT Building"
-        date="Oct 1, 2026 • 9:15 AM"
-        status="Caution Sign Placed"
-      />
-
-      <IncidentCard
-        title="Flickering Emergency Exit Sign"
-        category="Security"
-        location="3rd Floor Science Wing"
-        date="Sep 30, 2026 • 4:10 PM"
-        status="Resolved"
-      />
+      {reports.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>No Incident Reports Recorded</Text>
+          <Text style={styles.emptySubtitle}>Submit a report from the File Report tab to log an incident.</Text>
+        </View>
+      ) : (
+        reports.map((item) => (
+          <IncidentCard
+            key={item.id}
+            title={item.title}
+            category={item.category}
+            location={item.location}
+            date={item.date}
+            description={item.description}
+            imageUri={item.imageUri}
+          />
+        ))
+      )}
     </ScrollView>
   );
 }
@@ -61,5 +84,25 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#64748B',
     marginTop: 2,
+  },
+  emptyContainer: {
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D5DFE9',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  emptyTitle: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#415A77',
+  },
+  emptySubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
