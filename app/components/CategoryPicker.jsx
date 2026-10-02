@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 // ==========================================
-// Reusable Component: CategoryPicker
+// Reusable Component: CategoryPicker (CategorySelector)
+// Course: IT3R10 • Group 1 (Campus Safety Incident Reporter)
 // Assigned Member: Richmarie Porras
 // Requirement: Receives Props (selectedCategory, onSelectCategory)
 // Palette: Slate Blue (#415A77) & Soft Slate (#778DA9)
@@ -12,7 +13,7 @@ export default function CategoryPicker({ selectedCategory, onSelectCategory }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>CATEGORY</Text>
+      <Text style={styles.label}>INCIDENT CATEGORY</Text>
       <View style={styles.buttonRow}>
         {categories.map((category) => {
           const isSelected = selectedCategory === category;
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     backgroundColor: '#EFF3F6',
-    paddingVertical: 7,
+    paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
