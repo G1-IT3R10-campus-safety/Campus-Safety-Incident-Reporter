@@ -1,22 +1,22 @@
-
-
-
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import CategoryPicker from '../components/CategoryPicker';
 import { validateReport } from '../utils/validation';
 import { saveReport } from '../services/storage';
+import { requestLocationPermission } from '../services/deviceFeatures';
 
 // ==========================================
 // Presentation Layer: Incident Report Form Screen (Final Sprint)
 // Course: IT3R10 • Group 1 (Campus Safety Incident Reporter)
 // Assigned Member: Richmarie Porras
 // Demonstrates: Presentation Layer -> Business Layer -> Data Layer Architecture
+// Features: Dynamic Location Input, Live GPS Tagging, and Photo Evidence Capture
 // Palette: Slate Blue (#415A77) & Soft Slate (#778DA9)
 // ==========================================
 export default function ReportScreen({ onNavigate }) {
   const [title, setTitle] = useState('');
+  const [locationName, setLocationName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Hazard');
   const [imageUri, setImageUri] = useState(null);
@@ -25,7 +25,6 @@ export default function ReportScreen({ onNavigate }) {
   // 1. Photo Capture & Evidence Attachment Handler
   const handleCapturePhoto = async () => {
     try {
-      // Request camera permission
       const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
 
       if (cameraPerm.status === 'granted') {
@@ -41,7 +40,7 @@ export default function ReportScreen({ onNavigate }) {
         }
       }
 
-      // Fallback: Launch gallery/file picker (for laptop web preview or if camera is skipped)
+      // Fallback: Launch gallery/file picker
       const galleryResult = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -69,13 +68,27 @@ export default function ReportScreen({ onNavigate }) {
     try {
       setIsSubmitting(true);
 
+      // Fetch Real Live Device GPS Coordinates (Arwin's GPS Service)
+      const gpsResult = await requestLocationPermission();
+      const coordsString =
+        gpsResult.granted && gpsResult.coords
+          ? `(${gpsResult.coords.latitude}° N, ${gpsResult.coords.longitude}° E)`
+          : '';
+
+      const finalLocation = locationName.trim()
+        ? `${locationName.trim()} ${coordsString}`.trim()
+        : coordsString
+        ? `Live Location ${coordsString}`
+        : 'Campus Grounds';
+
       // Step B: Data Layer Storage (Junrey's AsyncStorage)
       const newReportData = {
         title,
         category,
         description,
-        location: 'Campus Grounds • IT Complex (8.4542° N, 124.6319° E)',
+        location: finalLocation,
         imageUri: imageUri,
+        coords: gpsResult.coords || null,
       };
 
       const result = await saveReport(newReportData);
@@ -83,13 +96,14 @@ export default function ReportScreen({ onNavigate }) {
       if (result.success) {
         Alert.alert(
           'Report Submitted',
-          'Your incident report has been securely saved to campus storage.',
+          `Your incident report has been saved with location: ${finalLocation}`,
           [
             {
               text: 'View in History',
               onPress: () => {
                 // Reset form fields
                 setTitle('');
+                setLocationName('');
                 setDescription('');
                 setImageUri(null);
                 setCategory('Hazard');
@@ -125,11 +139,24 @@ export default function ReportScreen({ onNavigate }) {
         />
       </View>
 
-      {/* CategoryPicker (CategorySelector Reusable Component) */}
+      {/* CategoryPicker Reusable Component */}
       <CategoryPicker
         selectedCategory={category}
         onSelectCategory={setCategory}
       />
+
+      {/* Location / Campus Zone Input */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>LOCATION / CAMPUS ZONE</Text>
+        <TextInput
+          style={styles.textInput}
+          placeholder="e.g. Campus Canteen, 2nd Floor IT Building, Library"
+          placeholderTextColor="#94A3B8"
+          value={locationName}
+          onChangeText={setLocationName}
+        />
+        <Text style={styles.helperText}>Live GPS coordinates will be automatically tagged upon submission.</Text>
+      </View>
 
       {/* Incident Description Input */}
       <View style={styles.inputGroup}>
@@ -166,7 +193,7 @@ export default function ReportScreen({ onNavigate }) {
         )}
       </View>
 
-      {/* Submit Button (ReportButton) */}
+      {/* Submit Button */}
       <TouchableOpacity
         style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
         onPress={handleSubmit}
@@ -215,6 +242,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     backgroundColor: '#FFFFFF',
     color: '#1E293B',
+  },
+  helperText: {
+    fontSize: 10,
+    color: '#778DA9',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   textArea: {
     height: 80,
